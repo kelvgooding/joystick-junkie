@@ -2,7 +2,7 @@
 Author: Kelvin Gooding
 Created: 2024-01-18
 Updated: 2024-01-23
-Version: 1.1
+Version: dev-1.1
 """
 
 #!/usr/bin/python3

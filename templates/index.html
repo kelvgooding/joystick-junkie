@@ -29,7 +29,31 @@
                 <div class="row-container">
                     {% for i in ps5_games %}
                         <div class="class1">
-                            <img src="{{ i.3 }}"><br>
+                            <img src="{{ i.3 }}" id="myButton"><br>
+
+                            <div id="myPopup" class="popup">
+                                <div class="popup-content">
+                                    <img src="{{ i.3 }}" id="myButton"><br>
+                                    <button id="closePopup">
+                                          Close
+                                    </button>
+                                </div>
+                            </div>
+
+                            <script>
+                                myButton.addEventListener("click", function () {
+                                    myPopup.classList.add("show");
+                                });
+                                closePopup.addEventListener("click", function () {
+                                    myPopup.classList.remove("show");
+                                });
+                                window.addEventListener("click", function (event) {
+                                    if (event.target == myPopup) {
+                                        myPopup.classList.remove("show");
+                                    }
+                                });
+                            </script>
+
                         {{ i.0 }}<br>
                         RELEASE DATE:
                         {{ i.1 }}<br>
