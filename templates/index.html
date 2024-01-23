@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="author" content="Kelv Gooding">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/x-icon" href="../static/img/img_joystick.png">
+        <link rel="stylesheet" href="../static/css/styles.css">
+        <title>My Game Collection</title>
+    </head>
+    <body>
+        <header>
+            - Status
+            - Platform
+            - Rating
+        </header>
+        <main>
+
+            <form method="post">
+                <button type="submit" name="no_filter">No Filter</button>
+                <button type="submit" name="playing">Playing</button>
+                <button type="submit" name="backlog">Backlog</button>
+                <button type="submit" name="completed">Completed</button>
+            </form>
+                
+            {% if ps5_count > 0 %}
+
+                <h1>PlayStation 5   |   {{ ps5_count}} Games</h1>
+                <hr>
+                <div class="row-container">
+                    {% for i in ps5_games %}
+                        <div class="class1">
+                            <img src="{{ i.3 }}"><br>
+                        {{ i.0 }}<br>
+                        RELEASE DATE:
+                        {{ i.1 }}<br>
+                        {% for i in range(i.4) %}
+                                <img src="../static/img/img-rating-star.png", width="15px", height="15px">
+                        {% else %}
+                            No Rating
+                        {% endfor %}
+                        <br>
+                    </div>
+                    {% endfor %}
+                </div>
+            
+            {% endif %}
+
+            {% if ps4_count > 0 %}
+
+                <h1>PlayStation 4   |   {{ ps4_count}} Games</h1>
+                <hr>
+
+                <div class="row-container">
+                    {% for i in ps4_games %}
+                        <div class="class1">
+                            <img src="{{ i.3 }}"><br>
+                        {{ i.0 }}<br>
+                        RELEASE DATE:
+                        {{ i.1 }}<br>
+                        {% for i in range(i.4) %}
+                                <img src="../static/img/img-rating-star.png", width="15px", height="15px">
+                        {% else %}
+                            No Rating
+                        {% endfor %}
+                        <br>
+                    </div>
+                    {% endfor %}
+                </div>
+        
+            {% endif %}
+
+
+            {% if ns_count > 0 %}
+
+                <h1>Nintendo Switch   |   {{ ns_count}} Games</h1>
+                <hr>
+
+                <div class="row-container">
+                    {% for i in ns_games %}
+                        <div class="class1">
+                            <img src="{{ i.3 }}"><br>
+                        {{ i.0 }}<br>
+                        RELEASE DATE:
+                        {{ i.1 }}<br>
+                        {% for i in range(i.4) %}
+                                <img src="../static/img/img-rating-star.png", width="15px", height="15px">
+                        {% else %}
+                            No Rating
+                        {% endfor %}
+                        <br>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            {% endif %}
+
+        </main>
+        <footer>
+        </footer>
+    </body>
+</html>
