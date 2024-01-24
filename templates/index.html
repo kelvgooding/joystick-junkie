@@ -5,121 +5,120 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="icon" type="image/x-icon" href="../static/img/img_joystick.png">
         <link rel="stylesheet" href="../static/css/styles.css">
-        <title>My Game Collection</title>
+        <title>Joystick Junkie | Personal Video Game Collection</title>
     </head>
     <body>
         <header>
-            - Status
-            - Platform
-            - Rating
         </header>
         <main>
 
+            Filter by:
+
             <form method="post">
-                <button type="submit" name="no_filter">No Filter</button>
                 <button type="submit" name="playing">Playing</button>
                 <button type="submit" name="backlog">Backlog</button>
                 <button type="submit" name="completed">Completed</button>
+                <button type="submit" name="rating">Rating</button>
             </form>
                 
             {% if ps5_count > 0 %}
-
-                <h1>PlayStation 5   |   {{ ps5_count}} Games</h1>
-                <hr>
-                <div class="row-container">
-                    {% for i in ps5_games %}
-                        <div class="class1">
-                            <img src="{{ i.3 }}" id="myButton"><br>
-
-                            <div id="myPopup" class="popup">
-                                <div class="popup-content">
-                                    <img src="{{ i.3 }}" id="myButton"><br>
-                                    <button id="closePopup">
-                                          Close
-                                    </button>
-                                </div>
+            <h1>PlayStation 5 | {{ ps5_count }} Games</h1>
+            <hr>
+            <div class="row-container">
+                {% for game in ps5_games %}
+                    <div class="class1">
+                        <img src="{{ game.3 }}" id="myButton{{ loop.index }}" class="game-image"><br>
+                        <div id="myPopup{{ loop.index }}" class="popup">
+                            <div class="popup-content">
+                                <img src="{{ game.3 }}" id="popupImage{{ loop.index }}" class="popup-image">
+                                <br>
+                                <b>{{ game.0 }}</b>
+                                <br>
+                                <b>RELEASE DATE:</b> {{ game.1 }}
+                                <br>
+                                <b>RATING:</b>
+                                <br>
+                                {% for _ in range(game.4) %}
+                                    <img src="../static/img/img-rating-star.png" width="18px" height="18px">
+                                {% else %}
+                                    No Rating
+                                {% endfor %}
+                                <br>
                             </div>
-
-                            <script>
-                                myButton.addEventListener("click", function () {
-                                    myPopup.classList.add("show");
-                                });
-                                closePopup.addEventListener("click", function () {
-                                    myPopup.classList.remove("show");
-                                });
-                                window.addEventListener("click", function (event) {
-                                    if (event.target == myPopup) {
-                                        myPopup.classList.remove("show");
-                                    }
-                                });
-                            </script>
-
-                        {{ i.0 }}<br>
-                        RELEASE DATE:
-                        {{ i.1 }}<br>
-                        {% for i in range(i.4) %}
-                                <img src="../static/img/img-rating-star.png", width="15px", height="15px">
-                        {% else %}
-                            No Rating
-                        {% endfor %}
-                        <br>
+                            <button class="closePopup" data-popup-id="{{ loop.index }}">Close</button>
+                        </div>
                     </div>
-                    {% endfor %}
-                </div>
-            
+                {% endfor %}
+            </div>
             {% endif %}
 
             {% if ps4_count > 0 %}
-
-                <h1>PlayStation 4   |   {{ ps4_count}} Games</h1>
-                <hr>
-
-                <div class="row-container">
-                    {% for i in ps4_games %}
-                        <div class="class1">
-                            <img src="{{ i.3 }}"><br>
-                        {{ i.0 }}<br>
-                        RELEASE DATE:
-                        {{ i.1 }}<br>
-                        {% for i in range(i.4) %}
-                                <img src="../static/img/img-rating-star.png", width="15px", height="15px">
-                        {% else %}
-                            No Rating
-                        {% endfor %}
-                        <br>
-                    </div>
+            <h1>PlayStation 4 | {{ ps4_count }} Games</h1>
+            <hr>
+            <div class="row-container">
+                {% for game in ps4_games %}
+                    <div class="class1">
+                        <img src="{{ game.3 }}" id="myButton{{ loop.index }}" class="game-image"><br>
+                        <div id="myPopup{{ loop.index }}" class="popup">
+                            <div class="popup-content">
+                                <img src="{{ game.3 }}" id="popupImage{{ loop.index }}" class="popup-image">
+                                <br>
+                                <b>{{ game.0 }}</b>
+                                <br>
+                                <b>RELEASE DATE:</b> {{ game.1 }}
+                                <br>
+                                <b>RATING:</b>
+                                <br>
+                                {% for _ in range(game.4) %}
+                                    <img src="../static/img/img-rating-star.png" width="18px" height="18px">
+                                {% else %}
+                                    No Rating
+                                {% endfor %}
+                                <br>
+                                </div>
+                            <button class="closePopup" data-popup-id="{{ loop.index }}">Close</button>
+                            </div>
+                        </div>
                     {% endfor %}
-                </div>
-        
+            </div>
             {% endif %}
 
-
             {% if ns_count > 0 %}
-
-                <h1>Nintendo Switch   |   {{ ns_count}} Games</h1>
-                <hr>
-
-                <div class="row-container">
-                    {% for i in ns_games %}
-                        <div class="class1">
-                            <img src="{{ i.3 }}"><br>
-                        {{ i.0 }}<br>
-                        RELEASE DATE:
-                        {{ i.1 }}<br>
-                        {% for i in range(i.4) %}
-                                <img src="../static/img/img-rating-star.png", width="15px", height="15px">
-                        {% else %}
-                            No Rating
-                        {% endfor %}
-                        <br>
-                    </div>
+            <h1>Nintendo Switch | {{ ns_count }} Games</h1>
+            <hr>
+            <div class="row-container">
+                {% for game in ns_games %}
+                    <div class="class1">
+                        <img src="{{ game.3 }}" id="myButton{{ loop.index }}" class="game-image"><br>
+                        <div id="myPopup{{ loop.index }}" class="popup">
+                            <div class="popup-content">
+                                <img src="{{ game.3 }}" id="popupImage{{ loop.index }}" class="popup-image">
+                                <br>
+                                <b>{{ game.0 }}</b>
+                                <br>
+                                <b>RELEASE DATE:</b> {{ game.1 }}
+                                <br>
+                                <b>RATING:</b>
+                                <br>
+                                {% for _ in range(game.4) %}
+                                    <img src="../static/img/img-rating-star.png" width="18px" height="18px">
+                                {% else %}
+                                    No Rating
+                                {% endfor %}
+                                <br>
+                                </div>
+                            <button class="closePopup" data-popup-id="{{ loop.index }}">Close</button>
+                            </div>
+                        </div>
                     {% endfor %}
-                </div>
-
+            </div>
             {% endif %}
 
         </main>
         <footer>
         </footer>
+
+    <script src="../static/js/popup.js"></script>
+
     </body>
 </html>
