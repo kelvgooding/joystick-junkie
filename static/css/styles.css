@@ -1,7 +1,7 @@
 body {
     background-color: #121f30;
     font-size: 1em;
-    color: #ffffff;
+    color: #000000;
     margin: 0;
     padding: 1.5em 1.5em 1.5em 1.5em;
     text-align: center;
@@ -31,8 +31,23 @@ header {
 
 h1 {
     text-align: left;
+    color: #ffffff;
 }
 
+.game-image:hover {
+    transition: all 1s ease-in-out;
+    transform: scale(1.1);
+}
+
+button[type=submit] {
+    width: 125px;
+    height: 60px;
+    color: rgb(255, 255, 255);
+    background-color: #121f30;
+    border: 1px;
+    border-color: aqua;
+    border-radius: 10px;
+}
 
 
 
@@ -73,3 +88,5 @@ h1 {
 .show {
     display: block;
 }
+
+

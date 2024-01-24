@@ -1,11 +1,13 @@
 """
 Author: Kelvin Gooding
 Created: 2024-01-18
-Updated: 2024-01-23
-Version: dev-1.1
+Updated: 2024-01-24
+Version: dev-1.2
 """
 
 #!/usr/bin/python3
+
+# Modules
 
 from flask import Flask, render_template, request, flash
 import sqlite3
@@ -78,8 +80,6 @@ def index():
 
             for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "Nintendo Switch"  AND STATUS == "Playing" ORDER BY NAME ASC'):
                 ns_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-
-            print(len(ps5_games))
 
             return render_template("index.html", ps5_games=ps5_games, ps5_count=len(ps5_games), ps4_games=ps4_games, ps4_count=len(ps4_games), ns_games=ns_games, ns_count=len(ns_games))
 
