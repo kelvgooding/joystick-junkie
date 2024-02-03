@@ -1,8 +1,8 @@
 """
 Author: Kelvin Gooding
 Created: 2024-01-18
-Updated: 2024-01-25
-Version: dev-1.3
+Updated: 2024-01-31
+Version: dev-1.4
 """
 
 #!/usr/bin/python3
@@ -87,13 +87,13 @@ def index():
 
         elif 'wishlist' in request.form:
 
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS5" AND STATUS == "Wishlist" ORDER BY NAME ASC'):
+            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS5" AND STATUS == "Wishlist" ORDER BY RELEASE_DATE DESC'):
                 ps5_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
         
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS4"  AND STATUS == "Wishlist" ORDER BY NAME ASC'):
+            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS4"  AND STATUS == "Wishlist" ORDER BY RELEASE_DATE DESC'):
                 ps4_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
 
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "Nintendo Switch"  AND STATUS == "Wishlist" ORDER BY NAME ASC'):
+            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "Nintendo Switch"  AND STATUS == "Wishlist" ORDER BY RELEASE_DATE DESC'):
                 ns_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
 
             return render_template("index.html", ps5_games=ps5_games, ps5_count=len(ps5_games), ps4_games=ps4_games, ps4_count=len(ps4_games), ns_games=ns_games, ns_count=len(ns_games))
@@ -102,13 +102,13 @@ def index():
 
     else:
 
-        for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS5" ORDER BY NAME ASC'):
+        for i in c.execute('SELECT * FROM gamelist WHERE platform = "PS5" AND status NOT IN ("Wishlist") ORDER BY name ASC;'):
             ps5_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
         
-        for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS4" ORDER BY NAME ASC'):
+        for i in c.execute('SELECT * FROM gamelist WHERE platform = "PS4" AND status NOT IN ("Wishlist") ORDER BY name ASC;'):
             ps4_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
 
-        for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "Nintendo Switch" ORDER BY NAME ASC'):
+        for i in c.execute('SELECT * FROM gamelist WHERE platform = "Nintendo Switch" AND status NOT IN ("Wishlist") ORDER BY name ASC;'):
             ns_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
         
         return render_template("index.html", ps5_games=ps5_games, ps5_count=len(ps5_games), ps4_games=ps4_games, ps4_count=len(ps4_games), ns_games=ns_games, ns_count=len(ns_games))
