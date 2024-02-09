@@ -1,0 +1,40 @@
+body{
+    background-color: #121f30;
+    color: #FFFFFF;
+    text-align: center;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.input-fields {
+    width: 16em;
+    height: 2.5em;
+    text-align: center;
+}
+
+.input-button {
+    width: 10em;
+    height: 3em;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 10px;
+    border: 0px;
+}
+
+.input-select {
+    text-align: center;
+    width: 18.5em;
+    height: 3.25em;
+    background-color: #FFFFFF;
+    font-size: 12px;
+    border-color: #8F8F9D;
+    border-width: 1px;  
+}
+
+.form-border {
+    border-style: solid;
+    border-color: #000000;
+    border-radius: 15px;
+    padding: 20px;
+    width: 300px;
+    margin: auto auto;
+}

@@ -9,6 +9,9 @@
     </head>
     <body>
         <header>
+            <a href="{{ url_for('new_entry') }}">
+                <img src="../static/img/img-add-game.png" width="30px" height="30px">
+            </a>
         </header>
         <main>
 
@@ -23,7 +26,8 @@
                 
             {% if ps5_count > 0 %}
             <h1>PlayStation 5 | {{ ps5_count }} Games</h1>
-            <img src="../static/img/img-add-game.png" width="30px" height="30px">
+
+            
             <hr>
             <div class="row-container">
                 {% for game in ps5_games %}
