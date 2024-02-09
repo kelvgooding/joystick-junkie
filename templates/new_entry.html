@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="author" content="Kelv Gooding">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/x-icon" href="../static/img/img_joystick.png">
+        <link rel="stylesheet" href="../static/css/styles_new_entry.css">
+        <title>Joystick Junkie | New Entry</title>
+    </head>
+    <body>
+        <header>
+        </header>
+        <main>
+
+            <div class="form-border">
+                <form method="post">
+
+                    <h3>Name:</h3>
+                    <input type="text" name="name" class="input-fields" required/>
+                    <br>
+
+                    <h3>Release Date:</h3>
+                    <input type="text" name="release_date" class="input-fields" required/>
+                    <br>
+
+                    <h3>Players:</h3>
+                    <input type="text" name="players" class="input-fields" required />
+                    <br>
+
+                    <h3>Genre:</h3>
+                    <input type="text" name="genre" class="input-fields" required />
+                    <br>
+
+                    <h3>Status:</h3>
+                    <select name="status" class="input-select" required>
+                        <option value="Select an Option"></option>
+                        {% for i in status %}
+                            <option value={{i}}>{{i}}</option>
+                        {% endfor %}
+                    </select>
+
+                    <h3>Platform:</h3>
+                    <select name="platform" class="input-select" required>
+                        <option value="Select an Option"></option>
+                        {% for i in platform %}
+                            <option value={{i}}>{{i}}</option>
+                        {% endfor %}
+                    </select>
+
+                    <h3>Format:</h3>
+                    <select name="format" class="input-select" required>
+                        <option value="Select an Option"></option>
+                        {% for i in format %}
+                            <option value={{i}}>{{i}}</option>
+                        {% endfor %}
+                    </select>
+
+                    <h3>Rating:</h3>
+                    <input type="text" name="rating" class="input-fields" required />
+                    <br>
+
+                    <h3>Link:</h3>
+                    <input type="text" name="link" class="input-fields" required />
+                    <br>
+
+                    <h3>Cover Image:</h3>
+                    <input type="text" name="cover_image" class="input-fields" required />
+                    <br>
+
+                    <br><br>
+                    
+                    <input type="submit" value="Submit" class="input-button"/>
+                </form>
+
+                {% for i in get_flashed_messages()%}
+                    <br>
+                    {{i}}
+                {% endfor %}
+                
+            </div>
+
+        </main>
+
+        <footer>
+        </footer>
+    </body>
+</html>
