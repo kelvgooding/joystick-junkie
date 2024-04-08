@@ -1,8 +1,8 @@
 """
 Author: Kelvin Gooding
 Created: 2024-01-18
-Updated: 2024-02-09
-Version: dev-1.5
+Updated: 2024-04-08
+Version: 1.0
 """
 
 #!/usr/bin/python3
@@ -10,13 +10,20 @@ Version: dev-1.5
 # Modules
 
 from flask import Flask, render_template, request, flash
-import sqlite3
+from modules import db_check
 import os
+
+# General Variables
+
+base_path = os.path.dirname(os.path.abspath(__file__))
+db_filename = 'games.db'
+sql_script = f'{base_path}/scripts/sql/create_tables.sql'
 
 # SQLite3 Variables
 
-connection = sqlite3.connect('games.db', check_same_thread=False)
-c = connection.cursor()
+db_check.check_db(f'{base_path}', f'{db_filename}', f'{sql_script}')
+conn = db_check.sqlite3.connect(os.path.join(base_path, db_filename), check_same_thread=False)
+c = conn.cursor()
 
 # Flask Variables
 
@@ -127,7 +134,7 @@ def new_entry():
 
     if request.method == "POST":
         c.execute('INSERT INTO gamelist VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (request.form.get("name"), request.form.get("release_date"), request.form.get("players"), request.form.get("genre"), request.form.get("status"), request.form.get("platform"), request.form.get("format"), request.form.get("rating"), request.form.get("link"), request.form.get("cover_image"),))
-        connection.commit()
+        conn.commit()
 
         flash("A new entry has now been added!")
         return render_template("new_entry.html", status=status, platform=platform, format=format)
