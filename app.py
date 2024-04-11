@@ -23,7 +23,7 @@ sql_script = f'{base_path}/apps/{app_name}/scripts/sql/create_tables.sql'
 # SQLite3 Variables
 
 db_check.check_db(os.path.join(f'{base_path}', 'db'), f'{db_filename}', f'{sql_script}')
-conn = db_check.sqlite3.connect(os.path.join(base_path, db_filename), check_same_thread=False)
+conn = db_check.sqlite3.connect(os.path.join(base_path, 'db', db_filename), check_same_thread=False)
 c = conn.cursor()
 
 # Flask Variables
