@@ -1,8 +1,8 @@
 """
 Author: Kelvin Gooding
 Created: 2024-01-18
-Updated: 2024-04-08
-Version: 1.0
+Updated: 2024-04-11
+Version: 1.1
 """
 
 #!/usr/bin/python3
@@ -15,13 +15,14 @@ import os
 
 # General Variables
 
-base_path = os.path.dirname(os.path.abspath(__file__))
+base_path = os.path.expanduser('~/homelab')
+app_name = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
 db_filename = 'games.db'
-sql_script = f'{base_path}/scripts/sql/create_tables.sql'
+sql_script = f'{base_path}/apps/{app_name}/scripts/sql/create_tables.sql'
 
 # SQLite3 Variables
 
-db_check.check_db(f'{base_path}', f'{db_filename}', f'{sql_script}')
+db_check.check_db(os.path.join(f'{base_path}', 'db'), f'{db_filename}', f'{sql_script}')
 conn = db_check.sqlite3.connect(os.path.join(base_path, db_filename), check_same_thread=False)
 c = conn.cursor()
 
@@ -143,4 +144,4 @@ def new_entry():
 
 if __name__ == "__main__":
     app.debug = True
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=3008)
