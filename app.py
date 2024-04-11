@@ -1,9 +1,21 @@
+#!/bin/usr/python3
+
 """
 Author: Kelvin Gooding
-Created: 2024-01-18
+Created: 2022-12-12
 Updated: 2024-04-11
-Version: 1.1
+Version: 1.3
 """
+
+# Modules
+
+from flask import Flask, render_template, flash, request, session, url_for, redirect
+from modules import smtp_mail
+from modules import db_check
+import sqlite3
+import random
+import string
+import os
 
 #!/usr/bin/python3
 
@@ -17,7 +29,7 @@ import os
 
 base_path = os.path.expanduser('~/homelab')
 app_name = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
-db_filename = 'games.db'
+db_filename = 'user_management_console.db'
 sql_script = f'{base_path}/apps/{app_name}/scripts/sql/create_tables.sql'
 
 # SQLite3 Variables
@@ -29,119 +41,230 @@ c = conn.cursor()
 # Flask Variables
 
 app = Flask(__name__)
-app = Flask(__name__)
 app.secret_key = os.urandom(26)
 
-@app.route("/" , methods=['POST', 'GET'])
+# Script
+
+@app.route("/")
 def index():
+    return render_template("index.html")
 
-    # Empty list for each console owned
+@app.route("/login", methods=["POST", "GET"])
+def login():
+    if request.method == "POST":
+        c.execute(f"SELECT loginid, password FROM users WHERE loginid=(?) and password=(?);", (
+            f"{request.form.get('login-username')}",
+            f"{request.form.get('login-password')}",))
 
-    ps5_games = []
-    ps4_games = []
-    ns_games = []
+        result = c.fetchone()
+        if result != (f"{request.form.get('login-username')}", f"{request.form.get('login-password')}"):
+            flash("Login failed. Please try again.")
+            if not session.get('name'):
+                print(session.get('name'))
+                return render_template("login.html")
+        else:
+            session["name"] = request.form.get('login-username')
+            print(session.get('name'))
+            return redirect(url_for("umc"))
+    else:
+        return render_template("login.html")
+
+@app.route("/login_pw_reset", methods=["POST", "GET"])
+def login_pw_reset():
+    if request.method == "POST":
+
+        list1 = []
+
+        for i in c.execute("SELECT loginid FROM users;"):
+            list1.append(i[-1])
+
+        if request.form.get("pwreset-username") in list1:
+            c.execute(f"UPDATE users SET password=(?), lastpasschange=(CURRENT_TIMESTAMP) WHERE loginid=(?)", (
+            f'{"".join(random.choices(string.ascii_lowercase + string.ascii_uppercase, k=20))}',
+            request.form.get("pwreset-username"),))
+            conn.commit()
+
+            c.execute("SELECT password FROM users where loginid=(?);", (
+            f'{request.form.get("pwreset-username")[0:5].lower().strip()}{request.form.get("pwreset-username")[0:3].lower().strip()}',))
+            passwd = c.fetchone()
+
+            smtp_mail.send_email(f"", f"{request.form.get('pwreset-username')} - UMC Password Reset", f"Hi {request.form.get('pwreset-username')}\n\n"
+                             f"Your password is: {passwd}\n\n")
+
+            flash("Password Reset email has been sent.")
+            return render_template("login_pw_reset.html")
+        else:
+            flash("Username does not exist. Please create a user.")
+            return render_template("login_pw_reset.html")
+    else:
+        return render_template("login_pw_reset.html")
+
+@app.route("/create_user", methods=["POST", "GET"])
+def create_user():
+    first_name = request.form.get("cu-firstname")
+    last_name = request.form.get("cu-lastname")
 
     if request.method == "POST":
 
-        # Clear console lists each time button is pressed.
+        c.execute('SELECT loginid FROM users WHERE loginid=(?);', (
+            f'{request.form.get("cu-lastname")[0:5].lower().strip()}{request.form.get("cu-firstname")[0:3].lower().strip()}',))
 
-        ps5_games.clear()
-        ps4_games.clear()
-        ns_games.clear()
+        result = c.fetchone()
+        try:
+            if result == f'{request.form.get("cu-lastname")[0:5].lower().strip()}{request.form.get("cu-firstname")[0:3].lower().strip()}':
+                flash('This username already exists.')
+                return render_template("create_user.html")
+            elif result != f'{request.form.get("cu-lastname")[0:5].lower().strip()}{request.form.get("cu-firstname")[0:3].lower().strip()}':
+                c.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, NULL)", (
+                    f'{request.form.get("cu-firstname").title().strip()}',
+                    f'{request.form.get("cu-lastname").title().strip()}',
+                    f'{request.form.get("cu-lastname")[0:5].lower()}{request.form.get("cu-firstname")[0:3].lower()}',
+                    f'{"".join(random.choices(string.ascii_lowercase + string.ascii_uppercase, k=20))}',
+                    f'{request.form.get("cu-email").lower().strip()}'
+                ))
+                conn.commit()
 
-        # Backlog Filter
+                smtp_mail.send_email(f"{request.form.get('cu-email').lower().strip()}", f'{first_name} {last_name} - UMC Username', 'Hi,\n\n'
+                                 f'Your username is: {request.form.get("cu-lastname")[0:5].lower().strip()}{request.form.get("cu-firstname")[0:3].lower().strip()}\n\n'
+                                 f'Your password will be send in a separate email.')
 
-        if 'backlog' in request.form:
+                c.execute("SELECT password FROM users where loginid=(?);", (
+                f'{request.form.get("cu-lastname")[0:5].lower().strip()}{request.form.get("cu-firstname")[0:3].lower().strip()}',))
 
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS5" AND STATUS == "Backlog" ORDER BY NAME ASC'):
-                ps5_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-        
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS4"  AND STATUS == "Backlog" ORDER BY NAME ASC'):
-                ps4_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
+                passwd = c.fetchone()[-1]
 
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "Nintendo Switch"  AND STATUS == "Backlog" ORDER BY NAME ASC'):
-                ns_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-            
-            return render_template("index.html", ps5_games=ps5_games, ps5_count=len(ps5_games), ps4_games=ps4_games, ps4_count=len(ps4_games), ns_games=ns_games, ns_count=len(ns_games))
-        
-        # Completed Filter
+                smtp_mail.send_email(f"{request.form.get('cu-email').lower().strip()}", f'{first_name} {last_name} - UMC Password', "Hi,\n\n"
+                                 f"Your password is: {passwd}\n\n")
 
-        elif 'completed' in request.form:
+                flash('Your account has been created.')
+                return render_template("create_user.html")
 
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS5" AND STATUS == "Completed" ORDER BY NAME ASC'):
-                ps5_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-        
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS4"  AND STATUS == "Completed" ORDER BY NAME ASC'):
-                ps4_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "Nintendo Switch"  AND STATUS == "Completed" ORDER BY NAME ASC'):
-                ns_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-
-            return render_template("index.html", ps5_games=ps5_games, ps5_count=len(ps5_games), ps4_games=ps4_games, ps4_count=len(ps4_games), ns_games=ns_games, ns_count=len(ns_games))
-        
-        # Playing Filter
-
-        elif 'playing' in request.form:
-
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS5" AND STATUS == "Playing" ORDER BY NAME ASC'):
-                ps5_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-        
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS4"  AND STATUS == "Playing" ORDER BY NAME ASC'):
-                ps4_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "Nintendo Switch"  AND STATUS == "Playing" ORDER BY NAME ASC'):
-                ns_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-
-            return render_template("index.html", ps5_games=ps5_games, ps5_count=len(ps5_games), ps4_games=ps4_games, ps4_count=len(ps4_games), ns_games=ns_games, ns_count=len(ns_games))
-
-        # Wishlist Filter
-
-        elif 'wishlist' in request.form:
-
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS5" AND STATUS == "Wishlist" ORDER BY RELEASE_DATE DESC'):
-                ps5_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-        
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "PS4"  AND STATUS == "Wishlist" ORDER BY RELEASE_DATE DESC'):
-                ps4_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-
-            for i in c.execute('SELECT * FROM gamelist WHERE PLATFORM == "Nintendo Switch"  AND STATUS == "Wishlist" ORDER BY RELEASE_DATE DESC'):
-                ns_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-
-            return render_template("index.html", ps5_games=ps5_games, ps5_count=len(ps5_games), ps4_games=ps4_games, ps4_count=len(ps4_games), ns_games=ns_games, ns_count=len(ns_games))
-
-    # No Filter
+        except sqlite3.IntegrityError:
+            flash('This username already exists.')
+            return render_template("create_user.html")
 
     else:
+        return render_template("create_user.html")
 
-        for i in c.execute('SELECT * FROM gamelist WHERE platform = "PS5" AND status NOT IN ("Wishlist") ORDER BY name ASC;'):
-            ps5_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-        
-        for i in c.execute('SELECT * FROM gamelist WHERE platform = "PS4" AND status NOT IN ("Wishlist") ORDER BY name ASC;'):
-            ps4_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
+@app.route("/umc", methods=["POST", "GET"])
+def umc():
+    if session.get('name') is None:
+        return redirect("/")
+    return render_template("umc.html", session=session.get('name'))
 
-        for i in c.execute('SELECT * FROM gamelist WHERE platform = "Nintendo Switch" AND status NOT IN ("Wishlist") ORDER BY name ASC;'):
-            ns_games.append([i[0].upper(), i[1], i[5], i[9], int(i[7])])
-        
-        return render_template("index.html", ps5_games=ps5_games, ps5_count=len(ps5_games), ps4_games=ps4_games, ps4_count=len(ps4_games), ns_games=ns_games, ns_count=len(ns_games))
+@app.route("/logout")
+def logout():
+    session['name'] = None
+    return redirect("/")
 
-@app.route("/new_entry", methods=["POST", 'GET'])
-def new_entry():
+@app.route("/view_users", methods=["POST", "GET"])
+def view_users():
+    headings = ("Full Name", "UID", "Created Date")
 
-    status = ['Playing', 'Completed', 'Backlog', 'Wishlist',]
-    
-    platform = ['PS5', 'PS4', 'Nintendo Switch',]
+    data = []
 
-    format = ['Physical', 'Digital']
+    for i in c.execute("SELECT first_name || ' ' || last_name AS full_name, loginid, SUBSTRING(accountcreation,1,10) FROM users ORDER BY loginid ASC"):
+        data.append(i)
 
-    if request.method == "POST":
-        c.execute('INSERT INTO gamelist VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', (request.form.get("name"), request.form.get("release_date"), request.form.get("players"), request.form.get("genre"), request.form.get("status"), request.form.get("platform"), request.form.get("format"), request.form.get("rating"), request.form.get("link"), request.form.get("cover_image"),))
+    if 'buttontest' in request.form:
+        c.execute('DELETE FROM users where loginid is not "goodikel";')
         conn.commit()
 
-        flash("A new entry has now been added!")
-        return render_template("new_entry.html", status=status, platform=platform, format=format)
-    
-    return render_template("new_entry.html", status=status, platform=platform, format=format)
+    return render_template("view_users.html", data=data, headings=headings)
 
-if __name__ == "__main__":
+@app.route("/add_users", methods=["POST", "GET"])
+def add_users():
+    first_name = request.form.get("au-firstname")
+    last_name = request.form.get("au-lastname")
+
+    if request.method == "POST":
+
+        c.execute('SELECT loginid FROM users WHERE loginid=(?);', (
+        f'{request.form.get("au-lastname")[0:5].lower().strip()}{request.form.get("au-firstname")[0:3].lower().strip()}',))
+
+        result = c.fetchone()
+        try:
+            if result == f'{request.form.get("au-lastname")[0:5].lower().strip()}{request.form.get("au-firstname")[0:3].lower().strip()}':
+                flash('This username already exists.')
+                return render_template("create_user.html")
+            elif result != f'{request.form.get("au-lastname")[0:5].lower().strip()}{request.form.get("au-firstname")[0:3].lower().strip()}':
+                c.execute("INSERT INTO users VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, NULL)", (
+                    f'{request.form.get("au-firstname").title().strip()}',
+                    f'{request.form.get("au-lastname").title().strip()}',
+                    f'{request.form.get("au-lastname")[0:5].lower()}{request.form.get("au-firstname")[0:3].lower()}',
+                    f'{"".join(random.choices(string.ascii_lowercase + string.ascii_uppercase, k=20))}',
+                    f'{request.form.get("au-email").lower().strip()}'
+                ))
+                conn.commit()
+
+                smtp_mail.send_email('livelifeautomate@gmail.com', f'{first_name} {last_name} - UMC Username', 'Hi,\n\n'
+                                 f'Your username is: {request.form.get("au-lastname")[0:5].lower().strip()}{request.form.get("au-firstname")[0:3].lower().strip()}\n\n'
+                                 f'Your password will be send in a separate email.')
+
+                c.execute("SELECT password FROM users where loginid=(?);", (
+                f'{request.form.get("au-lastname")[0:5].lower().strip()}{request.form.get("au-firstname")[0:3].lower().strip()}',))
+
+                passwd = c.fetchone()[-1]
+
+                smtp_mail.send_email('livelifeautomate@gmail.com', f'{first_name} {last_name} - UMC Password', 'Hi,\n\n'
+                                 f'Your password is: {passwd}\n\n')
+
+                flash('A new account has been created!')
+                return render_template("add_users.html")
+
+        except sqlite3.IntegrityError:
+            flash('This username already exists.')
+    return render_template("add_users.html")
+
+@app.route("/delete_user", methods=["POST", "GET"])
+def delete_user():
+    username = request.form.get("delete-dropdownbox")
+
+    list1 = []
+
+    for i in c.execute("SELECT loginid FROM users;"):
+        list1.append(i[-1])
+
+    if request.method == "POST":
+        c.execute(f"SELECT loginid FROM users WHERE loginid=(?)", (username,))
+        result = c.fetchone()[-1]
+
+        if result == username:
+            c.execute(f"DELETE FROM users WHERE loginid=(?)", (username,))
+            conn.commit()
+            flash("User has been deleted!")
+        else:
+            flash("User does not exist. Please try again.")
+
+    return render_template("delete_user.html", list1=list1)
+
+@app.route("/password_reset", methods=["POST", "GET"])
+def password_reset():
+    username = request.form.get("dropdownbox")
+    c_password = request.form.get("password-input")
+    password1 = request.form.get("password-input1")
+    password2 = request.form.get("password-input2")
+
+    list1 = []
+
+    for i in c.execute("SELECT loginid FROM users;"):
+        list1.append(i[-1])
+
+    if request.method == "POST":
+        c.execute("SELECT password FROM users WHERE loginid=(?)", (username,))
+        result = c.fetchone()[-1]
+        if result == c_password:
+            if password1 == password2:
+                c.execute(f"UPDATE users SET password=(?), lastpasschange=(CURRENT_TIMESTAMP) WHERE loginid=(?)",
+                          (password1, username,))
+                conn.commit()
+                flash("Password has been changed!")
+            else:
+                flash("Password does not match. Please try again.")
+        else:
+            flash("Password is incorrect. Please try again")
+    return render_template("password_reset.html", list1=list1)
+
+if __name__ == '__main__':
     app.debug = True
-    app.run(host="0.0.0.0", port=3008)
+    app.run(host='0.0.0.0', port=3002)
